@@ -1,29 +1,29 @@
-; LibreWolf Portable - https://github.com/ltGuillaume/LibreWolf-Portable
+; Snowfox Portable <https://github.com/Heptazhou/Snowfox-Portable>
 ;@Ahk2Exe-SetFileVersion 1.3.10
 
 ;@Ahk2Exe-Bin Unicode 64*
-;@Ahk2Exe-SetDescription LibreWolf Portable
-;@Ahk2Exe-SetMainIcon LibreWolf-Portable.ico
+;@Ahk2Exe-SetDescription Snowfox Portable
+;@Ahk2Exe-SetMainIcon Snowfox.ico
 ;@Ahk2Exe-PostExec ResourceHacker.exe -open "%A_WorkFileName%" -save "%A_WorkFileName%" -action delete -mask ICONGROUP`,160`, ,,,,1
 ;@Ahk2Exe-PostExec ResourceHacker.exe -open "%A_WorkFileName%" -save "%A_WorkFileName%" -action delete -mask ICONGROUP`,206`, ,,,,1
 ;@Ahk2Exe-PostExec ResourceHacker.exe -open "%A_WorkFileName%" -save "%A_WorkFileName%" -action delete -mask ICONGROUP`,207`, ,,,,1
 ;@Ahk2Exe-PostExec ResourceHacker.exe -open "%A_WorkFileName%" -save "%A_WorkFileName%" -action delete -mask ICONGROUP`,208`, ,,,,1
 
-ProgramPath     := A_ScriptDir "\LibreWolf"
-ExeFile         := ProgramPath "\librewolf.exe"
+ProgramPath     := A_ScriptDir "\Snowfox"
+ExeFile         := ProgramPath "\snowfox.exe"
 ProfilePath     := A_ScriptDir "\Profiles\Default"
 MozCommonPath   := A_AppDataCommon "\Mozilla-1de4eec8-1241-4177-a864-e594e8d1fb38"
 PortableRunning := False
 
 ; Strings
-_Title                = LibreWolf Portable
+_Title                = Snowfox Portable
 _NoDefaultBrowser     = Could not open your default browser.
-_GetProgramPathError  = Could not find the path to LibreWolf:`n%ProgramPath%
-_GetProfilePathError  = Could not find the path to the profile folder:`n%ProfilePath%`nIf this is the first time you are running LibreWolf Portable, you can ignore this. Continue?
+_GetProgramPathError  = Could not find the path to Snowfox:`n%ProgramPath%
+_GetProfilePathError  = Could not find the path to the profile folder:`n%ProfilePath%`nIf this is the first time you are running Snowfox Portable, you can ignore this. Continue?
 _BackupKeyFound       = A backup registry key has been found:
-_BackupFoundActions   = This means LibreWolf Portable has probably not been closed correctly. Continue to restore the found backup key after running, or remove the backup key yourself and press Retry to back up the current key.
-_ErrorStarting        = LibreWolf could not be started. Exit code:
-_MissingDLLs          = You probably don't have msvcp140.dll and vcruntime140.dll present on your system. Put these files in the folder %ProgramPath%,`nor install the Visual C++ runtime libraries via https://librewolf.net.
+_BackupFoundActions   = This means Snowfox Portable has probably not been closed correctly. Continue to restore the found backup key after running, or remove the backup key yourself and press Retry to back up the current key.
+_ErrorStarting        = Snowfox could not be started. Exit code:
+_MissingDLLs          = You probably do not have msvcp140.dll and vcruntime140.dll present on your system. Put these files in the folder %ProgramPath%`nor install the Visual C++ runtime libraries via:`nhttps://docs.microsoft.com/cpp/windows/latest-supported-vc-redist
 _FileReadError        = Error reading file for modification:
 
 ; Preparation
@@ -37,13 +37,14 @@ PortableVersion := SubStr(PortableVersion, 1, -2)
 SetWorkingDir, %A_Temp%
 Menu, Tray, Tip, %_Title% %PortableVersion%
 Menu, Tray, NoStandard
-Menu, Tray, Add, Portable, About
-Menu, Tray, Add, WinUpdater, About
+Menu, Tray, Add, Snowfox,          About
+Menu, Tray, Add, Snowfox Portable, About
 Menu, Tray, Add, Exit, Exit
-Menu, Tray, Default, Portable
 
 About(ItemName) {
-	Url = https://github.com/ltGuillaume/LibreWolf-%ItemName%
+	Url = https://github.com/0h7z/Snowfox
+	If (ItemName = "Snowfox Portable")
+	Url = https://github.com/Heptazhou/Snowfox-Portable
 	Try Run, %Url%
 	Catch {
 		RegRead, DefBrowser, HKCR, .html
@@ -54,14 +55,14 @@ About(ItemName) {
 	}
 }
 
-; Check for running LibreWolf-Portable processes
+; Check for running Snowfox Portable processes
 DetectHiddenWindows, On
 SetTitleMatchMode 2
 WinGet, Self, List, %A_ScriptName% ahk_exe %A_ScriptName%
 Loop, %Self%
 	If (Self%A_Index% != A_ScriptHwnd) {
 		PortableRunning := True
-;MsgBox, LibreWolf Portable is already running.`nSkipping preparation.
+;MsgBox, Snowfox Portable is already running.`nSkipping preparation.
 		Goto, Run
 	}
 
@@ -72,18 +73,7 @@ For i, Arg in A_Args
 	Args .= " " Arg
 }
 
-; Check for updates (once a day) if LibreWolf-WinUpdater is found
-WinUpdater := A_ScriptDir "\LibreWolf-WinUpdater"
-If (FileExist(WinUpdater ".exe")) {
-	If FileExist(WinUpdater ".ini")
-		FileGetTime, LastUpdate, %WinUpdater%.ini
-	If (!LastUpdate Or SubStr(LastUpdate, 1, 8) < SubStr(A_Now, 1, 8)) {
-		Run, %WinUpdater%.exe /Portable %Args%
-		Exit
-	}
-}
-
-; Check path to LibreWolf and profile
+; Check path to Snowfox and profile
 If !FileExist(ExeFile) {
 	MsgBox, 48, %_Title%, %_GetProgramPathError%
 	Exit
@@ -97,7 +87,7 @@ If !FileExist(ProfilePath) {
 }
 
 ; Backup existing registry key
-RegKey  := "HKCU\Software\LibreWolf"
+RegKey := "HKCU\SOFTWARE\0h7z"
 
 PrepRegistry:
 RegKeyFound := False
@@ -119,7 +109,7 @@ If RegKeyFound {
 	RegDelete, %RegKey%
 }
 
-; Skip path adjustment if profile path hasn't changed since last run
+; Skip path adjustment if profile path has not changed since last run
 If FileExist(ProfilePath "\.portable-lastpath") {	; Compatibility for older versions
 	FileDelete, %ProfilePath%\.portable-lastpath
 	Goto, ReplacePaths
@@ -138,7 +128,7 @@ DllCall("shlwapi\UrlCreateFromPathW", "Str", ProgramPath, "Str", ProgramPathUri,
 ProfilePathDS := StrReplace(ProfilePath, "\", "\\")
 VarSetCapacity(ProfilePathUri, 300*2)
 DllCall("shlwapi\UrlCreateFromPathW", "Str", ProfilePath, "Str", ProfilePathUri, "UInt*", 300, "UInt", 0x00040000)
-OverridesPath := "user_pref(""autoadmin.global_config_url"", """ ProfilePathUri "/librewolf.overrides.cfg"");"
+OverridesPath := "user_pref(""autoadmin.global_config_url"", """ ProfilePathUri "/snowfox.config.js"");"
 
 If FileExist(ProfilePath "\addonStartup.json.lz4") {
 	FileInstall, dejsonlz4.exe, dejsonlz4.exe, 0
@@ -170,12 +160,12 @@ ReplacePaths(FilePath) {
 	If Errorlevel {
 		MsgBox, 48, %_Title%, %_FileReadError%`n%FilePath%
 		Return
-	}		
+	}
 	FileOrg := File
 
 	If (FilePath = ProfilePath "\prefs.js") {
-		File := RegExReplace(File, "i)(, "")[^""]+?(\Qlibrewolf.overrides.cfg""\E)", "$1" ProfilePathUri "/$2", Count)
-;MsgBox, librewolf.overrides.cfg path was replaced %Count% times
+		File := RegExReplace(File, "i)(, "")[^""]+?(\Qsnowfox.config.js""\E)", "$1" ProfilePathUri "/$2", Count)
+;MsgBox, snowfox.config.js path was replaced %Count% times
 		If (Count = 0)
 			File .= OverridesPath
 	}
@@ -204,7 +194,7 @@ GetCityHash() {
 	}
 }
 
-; Run LibreWolf
+; Run Snowfox
 Run:
 If !PortableRunning
 	SetTimer, GetCityHash, 1000
@@ -219,16 +209,16 @@ If ErrorLevel {
 	MsgBox, 48, %_Title%, %Message%
 }
 
-; Leave the rest to the already running LibreWolf-Portable instance
+; Leave the rest to the already running Snowfox Portable instance
 If PortableRunning
 	Exit
 
 ExeFileDS := StrReplace(ExeFile, "\", "\\")
-; Wait for all LibreWolf processes of current user to be closed
+; Wait for all Snowfox processes of current user to be closed
 WaitClose:
 Sleep, 5000
 For Process in ComObjGet("winmgmts:").ExecQuery("Select ProcessId from Win32_Process where ExecutablePath=""" ExeFileDS """") {
-   Try {
+	Try {
 		oUser := ComObject(0x400C, &User)	; VT_BYREF
 		Process.GetOwner(oUser)
 ;MsgBox, % oUser[]
@@ -252,15 +242,12 @@ If CityHash {
 }
 
 ; Remove AppData and Temp folders if empty
-Folders := [ MozCommonPath, A_AppData "\LibreWolf\Extensions", A_AppData "\LibreWolf", LocalAppData "\LibreWolf", "mozilla-temp-files" ]
+Folders := [ MozCommonPath, A_AppData "\Snowfox\Extensions", A_AppData "\Snowfox", LocalAppData "\Snowfox", "mozilla-temp-files" ]
 For i, Folder in Folders
 	FileRemoveDir, %Folder%
-
-; Remove Start menu shortcut
-FileDelete, %A_AppData%\Microsoft\Windows\Start Menu\Programs\{-brand-shortcut-name} Private Browsing.lnk
-FileDelete, %A_AppData%\Microsoft\Windows\Start Menu\Programs\LibreWolf Private Browsing.lnk
 
 ; Clean-up
 Exit:
 If !PortableRunning
 	FileDelete, *jsonlz4.exe
+
